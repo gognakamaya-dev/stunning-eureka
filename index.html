@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kamaya's Outfit Creator</title>
+  <link rel="icon" type="image/png" href="bow.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="page-shell">
+    <header class="hero">
+      <span class="eyebrow">Kamaya's closet · daily edit</span>
+      <h1>Outfit Creator</h1>
+      <p>Let's style you Kamaya!</p>
+    </header>
+    <section class="weather-card" aria-labelledby="weather-title">
+      <div class="section-heading"><span class="bow">🎀</span><div><span class="eyebrow">live forecast</span><h2 id="weather-title">Today's weather</h2></div></div>
+      <form id="weather-form" class="location-form">
+        <label for="location">Location</label>
+        <div class="location-controls"><input id="location" name="location" value="Dublin" autocomplete="address-level2"><button type="submit" class="small-button">Update</button></div>
+      </form>
+      <p id="weather-status" class="weather-status" role="status">Checking the forecast...</p>
+      <div id="weather-dashboard" class="weather-dashboard" hidden>
+        <div class="temperature"><span id="weather-icon">☁</span><strong id="temperature">--°</strong><span id="weather-description">Loading</span></div>
+        <div class="weather-stat"><span>Feels like</span><strong id="feels-like">--°</strong></div>
+        <div class="weather-stat"><span>Rain chance</span><strong id="rain-chance">--%</strong></div>
+        <div class="weather-stat"><span>Wind</span><strong id="wind-speed">-- km/h</strong></div>
+      </div>
+    </section>
+    <section class="choices" aria-labelledby="choices-title">
+      <div class="section-heading compact"><span class="bow">♡</span><h2 id="choices-title">Style the mood</h2></div>
+      <h3>Where are you going?</h3>
+      <div class="choice-group" data-choice="plans"><button type="button">Dinner</button><button type="button">College</button><button type="button">Party!</button><button type="button">Casual</button></div>
+      <h3>What's the vibe?</h3>
+      <div class="choice-group" data-choice="vibe"><button type="button">Science-y</button><button type="button">Artsy</button><button type="button">Cosy</button><button type="button">Cool</button></div>
+      <button id="dress-me" type="button">✦ Dress me ✦</button>
+      <p id="outfit-result" class="outfit-result" role="status"></p>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
+<!DOCTYPE html>
+<html>
+  <head>
+  <title>Kamaya's Outfit Creator</title>
+  <link rel="icon" type="image/png" href="bow.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+
+
+</body>
+</html>
