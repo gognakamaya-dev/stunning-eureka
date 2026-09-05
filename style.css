@@ -33,6 +33,11 @@ button:hover, button:focus-visible, .choice-group button.selected { border-color
 #dress-me { display: block; margin: 34px auto 0; padding: 16px 32px; border: 0; color: white; background: var(--hot-pink); box-shadow: 0 6px 0 #bd3d76; font-size: 1rem; letter-spacing: .08em; }
 .outfit-result { min-height: 24px; margin: 24px auto 0; color: var(--hot-pink); font-weight: 700; }
 @media (max-width: 620px) { .weather-dashboard { grid-template-columns: 1fr 1fr; } .temperature { grid-column: 1 / -1; } }
+.outfit-display { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 18px; }
+.outfit-display figure { margin: 0; padding: 12px; border: 1px solid var(--line); border-radius: 16px; background: var(--blush); }
+.outfit-display img { display: block; width: 100%; height: 130px; object-fit: contain; }
+.outfit-display figcaption { margin-top: 8px; color: var(--hot-pink); font-size: .75rem; font-weight: 700; text-transform: uppercase; }
+@media (max-width: 480px) { .outfit-display img { height: 90px; } }
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@700;800&display=swap');
 
 :root {

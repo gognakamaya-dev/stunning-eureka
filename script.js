@@ -3,6 +3,7 @@ const locationInput = document.querySelector('#location');
 const weatherStatus = document.querySelector('#weather-status');
 const weatherDashboard = document.querySelector('#weather-dashboard');
 const outfitResult = document.querySelector('#outfit-result');
+const outfitDisplay = document.querySelector('#outfit-display');
 let currentWeather = null;
 
 const weatherDescriptions = { 0: ['☀️', 'Clear skies'], 1: ['🌤️', 'Mostly clear'], 2: ['⛅', 'Partly cloudy'], 3: ['☁️', 'Cloudy'], 45: ['🌫️', 'Misty'], 48: ['🌫️', 'Misty'], 51: ['🌦️', 'Light drizzle'], 53: ['🌦️', 'Drizzle'], 55: ['🌧️', 'Heavy drizzle'], 61: ['🌦️', 'Light rain'], 63: ['🌧️', 'Rainy'], 65: ['🌧️', 'Heavy rain'], 71: ['🌨️', 'Light snow'], 73: ['❄️', 'Snowy'], 75: ['❄️', 'Heavy snow'], 80: ['🌦️', 'Showers'], 81: ['🌧️', 'Rain showers'], 82: ['🌧️', 'Heavy showers'], 95: ['⛈️', 'Stormy'], 99: ['⛈️', 'Stormy'] };
@@ -41,8 +42,15 @@ document.querySelectorAll('.choice-group').forEach((group) => group.addEventList
 document.querySelector('#dress-me').addEventListener('click', () => {
 	if (!currentWeather) { outfitResult.textContent = 'Choose a location first so I can dress you for the weather 🎀'; return; }
 	const { temperature_2m: temperature, rain, wind_speed_10m: wind } = currentWeather;
-	const outfit = temperature < 10 ? 'a cosy jumper, warm trousers, and a cute coat' : temperature < 18 ? 'a soft cardigan, a cute top, and jeans' : 'a pretty top, a flowy skirt, and comfy shoes';
+	const outfit = temperature < 10
+		? { top: 'yellow_jumper.png', bottom: 'grey_trousers.png', shoes: 'sneakers.png', text: 'a cosy yellow jumper, warm trousers, and sneakers' }
+		: temperature < 18
+			? { top: 'red_shirt.png', bottom: 'blue_jeans.png', shoes: 'ballet_flats.png', text: 'a cute red shirt, blue jeans, and ballet flats' }
+			: { top: 'white_tee.png', bottom: 'white_skirt.png', shoes: 'ballet_flats.png', text: 'a pretty white tee, flowy skirt, and ballet flats' };
 	const extra = rain > 50 ? ' Bring an umbrella!' : wind > 25 ? ' Add a light jacket for the breeze.' : ' Finish with your favourite bow accessory.';
-	outfitResult.textContent = `Your weather-ready look: ${outfit}.${extra}`;
+	outfitResult.textContent = `Your weather-ready look: ${outfit.text}.${extra}`;
+	outfitDisplay.innerHTML = [
+		['Top', outfit.top], ['Bottom', outfit.bottom], ['Shoes', outfit.shoes]
+	].map(([label, file]) => `<figure><img src="clothes/${file}" alt="${label}: ${file.replace('.png', '').replaceAll('_', ' ')}"><figcaption>${label}</figcaption></figure>`).join('');
 });
 loadWeather('Dublin');
