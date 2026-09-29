@@ -6,6 +6,7 @@ const outfitResult = document.querySelector('#outfit-result');
 const outfitDisplay = document.querySelector('#outfit-display');
 let currentWeather = null;
 let lastOutfitId = null;
+let weatherRequest = 0;
 
 const weatherDescriptions = { 0: ['☀️', 'Clear skies'], 1: ['🌤️', 'Mostly clear'], 2: ['⛅', 'Partly cloudy'], 3: ['☁️', 'Cloudy'], 45: ['🌫️', 'Misty'], 48: ['🌫️', 'Misty'], 51: ['🌦️', 'Light drizzle'], 53: ['🌦️', 'Drizzle'], 55: ['🌧️', 'Heavy drizzle'], 61: ['🌦️', 'Light rain'], 63: ['🌧️', 'Rainy'], 65: ['🌧️', 'Heavy rain'], 71: ['🌨️', 'Light snow'], 73: ['❄️', 'Snowy'], 75: ['❄️', 'Heavy snow'], 80: ['🌦️', 'Showers'], 81: ['🌧️', 'Rain showers'], 82: ['🌧️', 'Heavy showers'], 95: ['⛈️', 'Stormy'], 99: ['⛈️', 'Stormy'] };
 const wardrobe = [
@@ -18,16 +19,26 @@ const wardrobe = [
 ];
 
 async function loadWeather(location) {
+	const request = ++weatherRequest;
+	currentWeather = null;
+	lastOutfitId = null;
+	outfitResult.textContent = '';
+	outfitDisplay.replaceChildren();
 	weatherStatus.textContent = 'Checking the forecast...';
 	weatherDashboard.hidden = true;
 	try {
 		const search = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1&language=en&format=json`);
+		if (!search.ok) throw new Error('Forecast unavailable');
 		const places = await search.json();
 		if (!places.results?.length) throw new Error('Location not found');
 		const place = places.results[0];
 		const forecast = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${place.latitude}&longitude=${place.longitude}&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m&hourly=precipitation_probability&forecast_days=1&timezone=auto`);
+		if (!forecast.ok) throw new Error('Forecast unavailable');
 		const data = await forecast.json();
-		currentWeather = { ...data.current, rain: data.hourly.precipitation_probability[0], place: place.name };
+		if (request !== weatherRequest) return;
+		const hour = data.hourly.time.findLastIndex((time) => time <= data.current.time);
+		if (hour < 0 || data.hourly.precipitation_probability[hour] == null) throw new Error('Forecast unavailable');
+		currentWeather = { ...data.current, rain: data.hourly.precipitation_probability[hour], place: place.name };
 		const [icon, description] = weatherDescriptions[currentWeather.weather_code] || ['🌈', 'Changeable'];
 		document.querySelector('#weather-icon').textContent = icon;
 		document.querySelector('#temperature').textContent = `${Math.round(currentWeather.temperature_2m)}°C`;
@@ -38,29 +49,34 @@ async function loadWeather(location) {
 		weatherStatus.textContent = `Forecast for ${currentWeather.place}`;
 		weatherDashboard.hidden = false;
 	} catch (error) {
-		weatherStatus.textContent = 'We could not find that place. Try another town or city.';
+		if (request !== weatherRequest) return;
+		weatherStatus.textContent = error.message === 'Location not found' ? 'We could not find that place. Try another town or city.' : 'The forecast is unavailable right now. Please try again.';
 	}
 }
 
-weatherForm.addEventListener('submit', (event) => { event.preventDefault(); loadWeather(locationInput.value.trim() || 'Dublin'); });
+weatherForm.addEventListener('submit', (event) => { event.preventDefault(); loadWeather(locationInput.value.trim()); });
 document.querySelectorAll('.choice-group').forEach((group) => group.addEventListener('click', (event) => {
 	if (!event.target.matches('button')) return;
-	group.querySelectorAll('button').forEach((button) => button.classList.remove('selected'));
+	group.querySelectorAll('button').forEach((button) => { button.classList.remove('selected'); button.setAttribute('aria-pressed', 'false'); });
 	event.target.classList.add('selected');
+	event.target.setAttribute('aria-pressed', 'true');
 }));
+document.querySelectorAll('.choice-group button').forEach((button) => button.setAttribute('aria-pressed', 'false'));
 document.querySelector('#dress-me').addEventListener('click', () => {
-	if (!currentWeather) { outfitResult.textContent = 'Choose a location first so I can dress you for the weather 🎀'; return; }
+	if (!currentWeather) { outfitResult.textContent = 'Update your location to get a forecast before I can dress you 🎀'; return; }
 	const { temperature_2m: temperature, rain, wind_speed_10m: wind } = currentWeather;
 	const plan = document.querySelector('[data-choice="plans"] .selected')?.textContent;
 	const vibe = document.querySelector('[data-choice="vibe"] .selected')?.textContent;
 	const suitable = wardrobe.filter((item) => temperature >= item.min && temperature <= item.max);
 	const matching = suitable.filter((item) => (!plan || item.plans.includes(plan)) && (!vibe || item.vibes.includes(vibe)));
-	const options = matching.length ? matching : suitable.length ? suitable : wardrobe;
+	const partial = suitable.filter((item) => (plan && item.plans.includes(plan)) || (vibe && item.vibes.includes(vibe)));
+	const options = matching.length ? matching : partial.length ? partial : suitable.length ? suitable : wardrobe;
 	const freshOptions = options.filter((item) => item.id !== lastOutfitId);
 	const outfit = (freshOptions.length ? freshOptions : options)[Math.floor(Math.random() * (freshOptions.length || options.length))];
 	lastOutfitId = outfit.id;
 	const extra = rain > 50 ? ' Bring an umbrella!' : wind > 25 ? ' Add a light jacket for the breeze.' : ' Finish with your favourite bow accessory.';
-	outfitResult.textContent = `Your weather-ready look: ${outfit.text}.${extra}`;
+	const note = matching.length ? '' : ' No exact match for your choices today; here is the closest available look.';
+	outfitResult.textContent = `Your weather-ready look: ${outfit.text}.${extra}${note}`;
 	outfitDisplay.innerHTML = [
 		['Top', outfit.top], ['Bottom', outfit.bottom], ['Shoes', outfit.shoes]
 	].map(([label, file]) => `<figure><img src="clothes/${file}" alt="${label}: ${file.replace('.png', '').replaceAll('_', ' ')}"><figcaption>${label}</figcaption></figure>`).join('');
